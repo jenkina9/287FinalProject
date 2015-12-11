@@ -1,0 +1,75 @@
+IBRARY ieee;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
+ENTITY ProjectV2 IS
+PORT( 	Reset : in std_logic;
+			Clock : in std_logic;
+			a,b,c,d: out std_logic);
+END ProjectV2;
+
+ARCHITECTURE Simon OF ProjectV2 IS
+	Signal clk : integer;
+	TYPE State_type Is (F, P);
+	Signal y : State_type := F;
+	Signal x : integer := 0;
+	Signal q : integer := 7;
+	Shared Variable s : std_logic_vector(10000 downto 0) := "10010111";
+	Shared Variable u : integer := 0 ;
+	Shared Variable hold : std_logic_vector(7 downto 0) := s;
+	Shared Variable add : std_logic_vector(3 downto 0) := "1010";
+	Shared Variable finalish : std_logic_vector((7+4) downto 0);
+
+BEGIN
+
+	PROCESS (Clock)
+		BEGIN
+		IF (Clock'Event AND Clock = '1') THEN
+			IF (x < 50000000) THEN
+				x <= x + 1;
+				--IF ( x > 50000000) THEN
+					clk <= 0;
+				--END IF;
+			ELSE
+				clk <= 1;
+				x <= 0;
+			END IF;
+		END IF;
+	END PROCESS;
+	
+	PROCESS(Clock)
+		BEGIN
+			IF(Clock'Event AND Clock = '1' AND clk = 1) THEN
+				u := u + 1;	
+				IF(u = 4) THEN
+					q <= q + 4;
+					finalish := s & add;
+				ELSIF(u = 5) THEN
+					s := finalish;
+				END IF;
+				
+				CASE y IS
+					WHEN F =>
+						a <= s(3);
+						b <= s(2);
+						c <= s(1);
+						d <= s(0);
+						y <= P;
+					WHEN P =>
+						a <= s(7);
+						b <= s(6);
+						c <= s(5);
+						d <= s(4);
+						y <= F;
+				END CASE;
+			END IF;
+	END PROCESS;
+	
+	PROCESS(Reset, Clock)
+		Variable hold : std_logic_vector(q downto 0);
+		Variable s : std_logic_vector(q downto 0);
+		BEGIN
+		END PROCESS;
+		
+END Simon;
